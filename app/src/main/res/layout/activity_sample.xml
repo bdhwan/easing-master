@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_sample"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.altamirasoft.easing_master.SampleActivity">
+
+
+    <View
+        android:id="@+id/cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#00ff00" />
+
+    <TextView
+        android:id="@+id/object"
+        android:layout_width="100px"
+        android:layout_height="100px"
+        android:background="#ff0000" />
+
+
+</RelativeLayout>
