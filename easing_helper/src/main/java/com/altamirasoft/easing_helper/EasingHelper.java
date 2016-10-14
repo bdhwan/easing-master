@@ -83,8 +83,6 @@ public class EasingHelper {
 
     public EasingHelper setTargetValue(float value) {
         this.targetValue = value;
-
-        Log.d("log","setTargetValue ="+value);
         resume();
         return this;
     }
