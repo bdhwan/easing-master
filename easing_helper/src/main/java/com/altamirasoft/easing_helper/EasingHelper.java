@@ -81,6 +81,13 @@ public class EasingHelper {
     }
 
 
+    public EasingHelper setCurrentValue(float value){
+        currentValue = value;
+        resume();
+        return this;
+    }
+
+
     public EasingHelper setTargetValue(float value) {
         this.targetValue = value;
         resume();
