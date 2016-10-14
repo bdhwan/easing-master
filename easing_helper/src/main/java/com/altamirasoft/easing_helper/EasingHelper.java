@@ -94,6 +94,9 @@ public class EasingHelper {
         return this;
     }
 
+    public boolean isStarted(){
+        return isStarted;
+    }
 
     public void start() {
 
