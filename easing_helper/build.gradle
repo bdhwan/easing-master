@@ -1,5 +1,32 @@
 apply plugin: 'com.android.library'
 
+apply plugin: 'com.novoda.bintray-release' // must be applied after your artifact generating plugin (eg. java / com.android.library)
+
+
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.novoda:bintray-release:0.3.4'
+    }
+}
+
+
+publish {
+    userOrg = 'bdhwan'
+    repoName = 'vxmaker'
+    groupId = 'com.altamirasoft.easingmaster'
+    artifactId = 'easing-master'
+    publishVersion = genVersionName()
+    desc = 'easing animation helper for android'
+    website = 'https://github.com/bdhwan/easing-master'
+}
+
+
+
+
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.3"
@@ -7,8 +34,8 @@ android {
     defaultConfig {
         minSdkVersion 11
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode gitVersion()
+        versionName genVersionName()
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -29,3 +56,41 @@ dependencies {
     compile 'com.android.support:appcompat-v7:24.2.1'
     testCompile 'junit:junit:4.12'
 }
+
+
+
+
+def gitVersion() {
+
+    def process = "git rev-list master --first-parent --count".execute()
+    def result = process.text.trim()
+    if (result == "") {
+        return 1
+    } else {
+        return result.toInteger()
+    }
+}
+
+def genVersionName() {
+    return '1.0.'+gitVersion()
+}
+
+
+
+task makeJar(type: Copy) {
+    from('build/intermediates/bundles/release/')
+    into('release/')
+    include('classes.jar')
+    rename ('classes.jar', "androidsvg_v_"+ gitVersion()+'.jar')
+
+}
+
+task clearJar(type: Delete) {
+    delete fileTree(dir:'release',include:['*.jar'])
+}
+
+
+makeJar.dependsOn(clearJar, build)
+
+
+
