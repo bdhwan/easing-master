@@ -14,6 +14,12 @@ import java.util.List;
 public class EasingHelper {
 
 
+    public static final int EASING_MODE_SIMPLE_EASING = 0;
+    public static final int EASING_MODE_SIMPLE_SPRING = 1;
+
+    int easingMode = EASING_MODE_SIMPLE_EASING;
+
+
     ValueAnimator updateAnimator;
 
     float targetValue;
@@ -21,6 +27,11 @@ public class EasingHelper {
 
 
     float easing = 0.1f;
+    float friction = 0.95f;
+    float spring = 0.1f;
+
+
+
     float minDiffer = easing * 10;
 
     boolean isStarted = false;
@@ -87,10 +98,26 @@ public class EasingHelper {
         return this;
     }
 
+    public EasingHelper setSpring(float value){
+        this.spring = value;
+        return this;
+    }
+
+    public EasingHelper setFriction(float value){
+        this.friction = value;
+        return this;
+    }
+
+
 
     public EasingHelper setTargetValue(float value) {
         this.targetValue = value;
         resume();
+        return this;
+    }
+
+    public EasingHelper setEasingMode(int target){
+        this.easingMode = target;
         return this;
     }
 
@@ -123,16 +150,37 @@ public class EasingHelper {
         }
     }
 
-
+    float vx = 0;
     private void invalidateData() {
 
-        float d = targetValue-currentValue;
 
-        if (Math.abs(d) < minDiffer) {
-            currentValue = targetValue;
-        } else {
-            currentValue = currentValue+d * easing;
+        if(easingMode==EASING_MODE_SIMPLE_EASING){
+            float d = targetValue-currentValue;
+            if (Math.abs(d) < minDiffer) {
+                currentValue = targetValue;
+            } else {
+                currentValue = currentValue+d * easing;
+            }
         }
+        else if(easingMode==EASING_MODE_SIMPLE_SPRING){
+            float d = targetValue-currentValue;
+            if (Math.abs(d) < minDiffer) {
+                currentValue = targetValue;
+            } else {
+
+                float ax = d*spring;
+                vx += ax;
+                vx *=friction;
+                currentValue = currentValue+vx;
+            }
+
+
+
+        }
+
+
+
+
 
         if (listeners != null) {
 
