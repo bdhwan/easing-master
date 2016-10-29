@@ -28,14 +28,16 @@ public class TouchSampleActivity extends AppCompatActivity {
         object = findViewById(R.id.object);
         cover = findViewById(R.id.cover);
         objectNone = findViewById(R.id.objectNone);
-        helperX = new EasingHelper().setEasing(0.1f);
+
+
         helperY = new EasingHelper().setEasing(0.1f);
 
+
+        helperX = new EasingHelper().setEasing(0.1f);
         helperX.addUpdateListener(new EasingUpdateListener() {
 
             @Override
             public void onUpdateCurrentValue(float value) {
-                Log.d("log","currentX = "+value);
                 object.setTranslationX(value);
             }
 
@@ -44,6 +46,9 @@ public class TouchSampleActivity extends AppCompatActivity {
 
             }
         });
+        helperX.start();
+
+
 
         helperY.addUpdateListener(new EasingUpdateListener() {
             @Override
@@ -57,7 +62,7 @@ public class TouchSampleActivity extends AppCompatActivity {
             }
         });
 
-        helperX.start();
+
         helperY.start();
 
 
