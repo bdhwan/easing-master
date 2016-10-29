@@ -6,7 +6,7 @@ Values change too quickly so we need make it smoothly. <br>
 
 
 # accelerometers animation
-<img src="https://raw.githubusercontent.com/bdhwan/easing-master/master/art/acc_easing.gif">
+<img src="https://raw.githubusercontent.com/bdhwan/easing-master/master/art/acc_easing.gif" width="500px">
 
 
 # how to
@@ -19,11 +19,12 @@ compile 'com.altamirasoft.easingmaster:easing-master:1.0.1'
 # add helper listener
 ```java
 
-        EasingHelper helperX = new EasingHelper().setEasing(0.1f);
-        helperX.addUpdateListener(new EasingUpdateListener() {
+        EasingHelper helper = new EasingHelper().setEasing(0.1f);
+        helper.addUpdateListener(new EasingUpdateListener() {
 
             @Override
             public void onUpdateCurrentValue(float value) {
+                //make ui update
                 object.setTranslationX(value);
             }
 
@@ -32,13 +33,14 @@ compile 'com.altamirasoft.easingmaster:easing-master:1.0.1'
 
             }
         });
-        helperX.start();
+        helper.start();
 
 ```
 
 # set target value
 ```java
 
-  helperX.setTargetValue(300);
+  //set target value
+  helper.setTargetValue(300);
 
 ```
