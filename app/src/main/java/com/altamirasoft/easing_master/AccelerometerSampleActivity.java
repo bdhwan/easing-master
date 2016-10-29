@@ -39,12 +39,15 @@ public class AccelerometerSampleActivity extends AppCompatActivity implements Se
         objectNone = findViewById(R.id.objectNone);
         objectEasing = findViewById(R.id.objectEasing);
         debug = (TextView)findViewById(R.id.debug);
-        helper = new EasingHelper();
+
 
 
         mSensorManager = (SensorManager)getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
+
+
+        helper = new EasingHelper();
 
         //add listener for smooth view update
         helper.addUpdateListener(this);
