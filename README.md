@@ -5,9 +5,11 @@ Android sensor's value (such as mic, accelerometers or gyroscope) is too dynamic
 Values change too quickly so we need make it smoothly. <br>
 Simply set target value, values between current and target value are made by helper class.<br>
 
+# accelerometers animation
+<img src="https://raw.githubusercontent.com/bdhwan/easing-master/master/art/acc_easing.gif">
 
-
-
+# touch down and drag
+<img src="https://raw.githubusercontent.com/bdhwan/easing-master/master/art/touch_easing.gif">
 
 
 
