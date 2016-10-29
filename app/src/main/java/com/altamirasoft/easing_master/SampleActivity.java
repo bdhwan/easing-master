@@ -19,9 +19,6 @@ public class SampleActivity extends AppCompatActivity {
     View cover;
 
 
-    float beforeX;
-    float beforeY;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

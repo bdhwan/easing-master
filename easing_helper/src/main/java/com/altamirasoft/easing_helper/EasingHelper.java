@@ -31,9 +31,7 @@ public class EasingHelper {
     float spring = 0.1f;
 
 
-
     float minDiffer = easing * 10;
-
     boolean isStarted = false;
 
 
@@ -48,7 +46,6 @@ public class EasingHelper {
         updateAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-//                Log.d("log","update ="+animation.getAnimatedValue());
                 invalidateData();
             }
         });
@@ -173,9 +170,6 @@ public class EasingHelper {
                 vx *=friction;
                 currentValue = currentValue+vx;
             }
-
-
-
         }
 
 
@@ -183,7 +177,6 @@ public class EasingHelper {
 
 
         if (listeners != null) {
-
             for (int i = 0; i < listeners.size(); i++) {
                 listeners.get(i).onUpdateCurrentValue(currentValue);
             }
