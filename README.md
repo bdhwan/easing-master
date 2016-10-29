@@ -6,10 +6,10 @@ Values change too quickly so we need make it smoothly. <br>
 Simply set target value, values between current and target value are made by helper class.<br>
 
 # accelerometers animation
-<img src="raw/master/art/acc_easing.gif">
+<img src="https://raw.githubusercontent.com/bdhwan/easing-master/master/art/acc_easing.gif">
 
 # touch down and drag
-<img src="raw/master/art/touch_easing.gif">
+<img src="https://raw.githubusercontent.com/bdhwan/easing-master/master/art/touch_easing.gif">
 
 
 
