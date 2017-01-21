@@ -13,7 +13,7 @@ Values change too quickly so we need make it smoothly. <br>
 add you app dependency
 
 ```java
-compile 'com.altamirasoft.easingmaster:easing-master:1.0.13'
+compile 'com.altamirasoft.easingmaster:easing-master:1.0.15'
 ```
 
 # add helper listener
