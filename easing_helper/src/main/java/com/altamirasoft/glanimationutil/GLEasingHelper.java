@@ -1,6 +1,6 @@
 package com.altamirasoft.glanimationutil;
 
-import android.animation.ValueAnimator;
+import android.os.SystemClock;
 
 import java.util.ArrayList;
 
@@ -17,8 +17,6 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
     int easingMode = EASING_MODE_SIMPLE_EASING;
 
 
-    ValueAnimator updateAnimator;
-
     float targetValue;
     float currentValue;
 
@@ -28,17 +26,44 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
     float spring = 0.1f;
 
 
-    float minDiffer = easing * 10;
+    float minDiffer = 1f;
     boolean isStarted = false;
     boolean isPaused = false;
 
 
     ArrayList<GLEasingUpdateListener> listeners;
+    ArrayList<EasingListener> mListeners = null;
+
+
+
+    public interface EasingListener {
+        void onEasingStart(GLEasingHelper animation);
+        void onEasingEnd(GLEasingHelper animation);
+    }
+
+
+
 
 
     public GLEasingHelper() {
         targetValue = 0;
         currentValue = 0;
+    }
+
+
+
+    public GLEasingHelper addListener(EasingListener listener) {
+        if (mListeners == null) {
+            mListeners = new ArrayList<EasingListener>();
+        }
+        mListeners.add(listener);
+        return this;
+    }
+
+    public void removeListener(GLValueAnimator.AnimatorListener listener) {
+        if (mListeners != null) {
+            mListeners.remove(listener);
+        }
     }
 
 
@@ -103,6 +128,8 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
         return this;
     }
 
+
+
     public GLEasingHelper setTargetValue(float value, boolean forceStart) {
         this.targetValue = value;
         if(forceStart&&isPaused){
@@ -110,6 +137,9 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
         }
         return this;
     }
+
+
+
 
     public GLEasingHelper setEasingMode(int target){
         this.easingMode = target;
@@ -123,7 +153,13 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
     public void start() {
         isStarted = true;
         isPaused = false;
+        if(mListeners!=null && isPaused){
+            for (int i = 0; i < mListeners.size(); i++) {
+                mListeners.get(i).onEasingStart(this);
+            }
+        }
     }
+
 
 
     public void pause() {
@@ -133,38 +169,39 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
 
     @Override
     public void doFrame() {
-
-
-        if(isPaused||!isStarted)return;
-
+        now = SystemClock.uptimeMillis();
         invalidateData();
+        beforeTime = now;
 
     }
 
 
-    float vx = 0;
+    long now;
+    long beforeTime;
+    float frameRate = 20;
+
+    public void setFrameRate(float value){
+        this.frameRate = value;
+    }
+
     private void invalidateData() {
 
-
-        if(easingMode==EASING_MODE_SIMPLE_EASING){
-            float d = targetValue-currentValue;
-            if (Math.abs(d) < minDiffer) {
-                currentValue = targetValue;
-            } else {
-                currentValue = currentValue+d * easing;
-            }
+        if(beforeTime==0){
+            return;
         }
-        else if(easingMode==EASING_MODE_SIMPLE_SPRING){
-            float d = targetValue-currentValue;
-            if (Math.abs(d) < minDiffer) {
-                currentValue = targetValue;
-            } else {
 
-                float ax = d*spring;
-                vx += ax;
-                vx *=friction;
-                currentValue = currentValue+vx;
+        float d = targetValue - currentValue;
+
+        if (Math.abs(d) < minDiffer) {
+            currentValue = targetValue;
+        } else {
+            float term = (now - beforeTime)/frameRate;
+            d = (targetValue - currentValue);
+            if(d==0)return;
+            if(term>1f){
+                term = 1f;
             }
+            currentValue = currentValue+d*term * easing;
         }
 
 
@@ -172,13 +209,18 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
             for (int i = 0; i < listeners.size(); i++) {
                 listeners.get(i).onUpdateCurrentValue(currentValue);
             }
+        }
 
-            //notify finish easing
-            if(currentValue==targetValue){
-                for (int i = 0; i < listeners.size(); i++) {
-                    listeners.get(i).onFinishUpdateValue(currentValue);
-                }
-//                pause();
+
+
+        //notify finish easing
+        if(currentValue==targetValue){
+            pause();
+        }
+
+        if(mListeners!=null && isPaused){
+            for (int i = 0; i < mListeners.size(); i++) {
+                mListeners.get(i).onEasingEnd(this);
             }
         }
 

@@ -1,56 +1,77 @@
 package com.altamirasoft.glanimationutil;
 
+import android.animation.Animator;
+import android.animation.ValueAnimator;
+import android.opengl.GLSurfaceView;
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
  * Created by bdhwan on 2017. 1. 20..
  */
 
-public class GLAnimatorManager implements GLAnimatorFrameListener,GLValueAnimator.AnimatorListener{
+public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelper.EasingListener,GLValueAnimator.AnimatorListener {
 
     static GLAnimatorManager instance;
+    ArrayList<GLValueAnimator> valueAnimatorList;
+    ArrayList<GLEasingHelper> easingAnimatorList;
+    boolean isPendingStopEasing = false;
 
 
-    ArrayList<GLAnimatorFrameListener> animatorList;
+
+    GLSurfaceView surfaceView;
+
+    public void setSurfaceView(GLSurfaceView surfaceView) {
+        this.surfaceView = surfaceView;
+    }
 
 
-    public static GLAnimatorManager getInstance(){
-        if(instance==null){
+
+    public static GLAnimatorManager getInstance() {
+        if (instance == null) {
             instance = new GLAnimatorManager();
-            instance.animatorList = new ArrayList<GLAnimatorFrameListener>();
+            instance.valueAnimatorList = new ArrayList<GLValueAnimator>();
+            instance.easingAnimatorList = new ArrayList<GLEasingHelper>();
+
         }
         return instance;
     }
 
 
-    public void addFrameListener(GLAnimatorFrameListener listener){
-        this.animatorList.add(listener);
+    public void addValueAnimFrameListener(GLValueAnimator listener) {
+        this.valueAnimatorList.add(listener);
     }
 
 
-
-    public void removeFrameListener(GLAnimatorFrameListener listener){
-        this.animatorList.remove(listener);
+    public void removeValueAnimFrameListener(GLValueAnimator listener) {
+        this.valueAnimatorList.remove(listener);
     }
 
-
-
-
-
-    public GLValueAnimator createValueAnimator(float from, float to){
-        GLValueAnimator animator = GLValueAnimator.ofFloat(from,to);
-        addFrameListener(animator);
-
+    public GLValueAnimator createValueAnimator(float from, float to) {
+        GLValueAnimator animator = GLValueAnimator.ofFloat(from, to);
+        addValueAnimFrameListener(animator);
         animator.addListener(this);
-
         return animator;
+    }
+
+
+    public void addEasingFrameListener(GLEasingHelper listener){
+        this.easingAnimatorList.add(listener);
+    }
+
+
+
+    public void removeEasingFrameListener(GLEasingHelper listener){
+        this.easingAnimatorList.remove(listener);
     }
 
 
     public GLEasingHelper createEasingHelper(){
 
         GLEasingHelper helper = new GLEasingHelper();
-        addFrameListener(helper);
+        addEasingFrameListener(helper);
+        helper.addListener(this);
         return helper;
 
     }
@@ -58,23 +79,89 @@ public class GLAnimatorManager implements GLAnimatorFrameListener,GLValueAnimato
 
 
 
+
+    ValueAnimator anim;
+
+    public void startAnim() {
+        if (anim == null) {
+            anim = ValueAnimator.ofFloat(0f, 1f);
+
+            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator valueAnimator) {
+
+                    doFrame();
+                }
+            });
+
+            anim.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animator) {
+                    Log.d("log", "strart anim");
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    Log.d("log", "end anim");
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animator) {
+
+                }
+            });
+            anim.setDuration(1000);
+            anim.setRepeatMode(ValueAnimator.REVERSE);
+            anim.setRepeatCount(ValueAnimator.INFINITE);
+        }
+
+        if (anim.isPaused()) {
+            anim.resume();
+        } else {
+            anim.start();
+        }
+    }
+
+
+    public void pauseAnim() {
+        anim.pause();
+    }
+
+
+
     @Override
     public void doFrame() {
 
-        for(int i =0;i<animatorList.size();i++){
-            animatorList.get(i).doFrame();
+        for (int i = 0; i < valueAnimatorList.size(); i++) {
+            valueAnimatorList.get(i).doFrame();
         }
+
+        for(int i =0;i<easingAnimatorList.size();i++){
+            easingAnimatorList.get(i).doFrame();
+        }
+
+        if (surfaceView != null) {
+            surfaceView.requestRender();
+        }
+
+
     }
 
 
     @Override
     public void onAnimationStart(GLValueAnimator animation) {
-
+        startAnim();
     }
 
     @Override
     public void onAnimationEnd(GLValueAnimator animation) {
-        removeFrameListener(animation);
+        removeValueAnimFrameListener(animation);
+        stopIfNoNeedUpdate();
     }
 
     @Override
@@ -86,4 +173,49 @@ public class GLAnimatorManager implements GLAnimatorFrameListener,GLValueAnimato
     public void onAnimationRepeat(GLValueAnimator animation) {
 
     }
+
+
+    @Override
+    public void onEasingStart(GLEasingHelper animation) {
+
+    }
+
+    @Override
+    public void onEasingEnd(GLEasingHelper animation) {
+        if(isPendingStopEasing){
+
+            stopIfNoNeedUpdate();
+        }
+    }
+
+
+    public void setPendingStopAnimationWithEasingEnd(boolean isPending){
+        this.isPendingStopEasing = isPending;
+    }
+
+
+    public void stopIfNoNeedUpdate(){
+        if(anim!=null){
+
+            if(valueAnimatorList.size()>0){
+                return;
+            }
+
+            boolean needStop = true;
+            for(int i =0;i<easingAnimatorList.size();i++){
+                if(!easingAnimatorList.get(i).isPaused){
+                    needStop = false;
+                    break;
+                }
+            }
+
+            if(needStop){
+                Log.d("log","stop easing update");
+                anim.pause();
+            }
+        }
+    }
+
+
+
 }
