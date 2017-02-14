@@ -40,12 +40,17 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
 
 
     public void addValueAnimFrameListener(GLValueAnimator listener) {
-        this.valueAnimatorList.add(listener);
+        if(this.valueAnimatorList!=null){
+            this.valueAnimatorList.add(listener);
+        }
     }
 
 
     public void removeValueAnimFrameListener(GLValueAnimator listener) {
-        this.valueAnimatorList.remove(listener);
+        if(this.valueAnimatorList!=null){
+            this.valueAnimatorList.remove(listener);
+        }
+
     }
 
     public GLValueAnimator createValueAnimator(float from, float to) {
@@ -57,13 +62,19 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
 
 
     public void addEasingFrameListener(GLEasingHelper listener){
-        this.easingAnimatorList.add(listener);
+        if(this.easingAnimatorList!=null){
+            this.easingAnimatorList.add(listener);
+        }
+
     }
 
 
 
     public void removeEasingFrameListener(GLEasingHelper listener){
-        this.easingAnimatorList.remove(listener);
+        if(this.easingAnimatorList!=null){
+            this.easingAnimatorList.remove(listener);
+        }
+
     }
 
 
@@ -213,7 +224,6 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
             }
 
             if(needStop){
-                Log.d("log","stop easing update");
                 anim.pause();
             }
         }
