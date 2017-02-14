@@ -108,12 +108,12 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
             anim.addListener(new Animator.AnimatorListener() {
                 @Override
                 public void onAnimationStart(Animator animator) {
-                    Log.d("log", "strart anim");
+
                 }
 
                 @Override
                 public void onAnimationEnd(Animator animator) {
-                    Log.d("log", "end anim");
+
                 }
 
                 @Override
