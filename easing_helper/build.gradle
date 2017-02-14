@@ -30,14 +30,15 @@ publish {
 android {
     compileSdkVersion 24
     buildToolsVersion "24.0.3"
+    lintOptions {
+        abortOnError false
+    }
 
     defaultConfig {
-        minSdkVersion 11
+        minSdkVersion 19
         targetSdkVersion 24
         versionCode gitVersion()
         versionName genVersionName()
-
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
     }
     buildTypes {

@@ -129,7 +129,10 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
 
 
     public void pauseAnim() {
-        anim.pause();
+        if(anim!=null){
+            anim.pause();
+        }
+
     }
 
 
