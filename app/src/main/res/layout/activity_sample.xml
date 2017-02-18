@@ -24,4 +24,15 @@
         android:onClick="clickAcc"
         />
 
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="20dp"
+        android:text="GL"
+        android:onClick="clickGL"
+        />
+
+
+
 </LinearLayout>

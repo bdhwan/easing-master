@@ -11,11 +11,13 @@ import java.util.ArrayList;
  * Created by bdhwan on 2017. 1. 20..
  */
 
-public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelper.EasingListener,GLValueAnimator.AnimatorListener {
+public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasingHelper.EasingListener, GLEasingHelper.EasingListener,GLValueAnimator.AnimatorListener {
 
     static GLAnimatorManager instance;
     ArrayList<GLValueAnimator> valueAnimatorList;
     ArrayList<GLEasingHelper> easingAnimatorList;
+    ArrayList<GLSimpleEasingHelper> simpleEasingAnimatorList;
+
     boolean isPendingStopEasing = false;
 
 
@@ -33,7 +35,7 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
             instance = new GLAnimatorManager();
             instance.valueAnimatorList = new ArrayList<GLValueAnimator>();
             instance.easingAnimatorList = new ArrayList<GLEasingHelper>();
-
+            instance.simpleEasingAnimatorList = new ArrayList<GLSimpleEasingHelper>();
         }
         return instance;
     }
@@ -65,7 +67,6 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
         if(this.easingAnimatorList!=null){
             this.easingAnimatorList.add(listener);
         }
-
     }
 
 
@@ -74,7 +75,6 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
         if(this.easingAnimatorList!=null){
             this.easingAnimatorList.remove(listener);
         }
-
     }
 
 
@@ -90,10 +90,39 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
 
 
 
+    public GLSimpleEasingHelper createSimpleEasingHelper(){
+        GLSimpleEasingHelper helper = new GLSimpleEasingHelper();
+        addSimpleEasingFrameListener(helper);
+        helper.addListener(this);
+        return helper;
+
+    }
+
+
+
+    public void addSimpleEasingFrameListener(GLSimpleEasingHelper listener){
+        if(this.simpleEasingAnimatorList!=null){
+            this.simpleEasingAnimatorList.add(listener);
+        }
+    }
+
+
+
+    public void removeSimpleEasingFrameListener(GLSimpleEasingHelper listener){
+        if(this.simpleEasingAnimatorList!=null){
+            this.simpleEasingAnimatorList.remove(listener);
+        }
+    }
+
+
+
+
+
 
     ValueAnimator anim;
 
     public void startAnim() {
+
         if (anim == null) {
             anim = ValueAnimator.ofFloat(0f, 1f);
 
@@ -143,7 +172,6 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
         if(anim!=null){
             anim.pause();
         }
-
     }
 
 
@@ -158,6 +186,11 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
         for(int i =0;i<easingAnimatorList.size();i++){
             easingAnimatorList.get(i).doFrame();
         }
+
+        for(int i =0;i<simpleEasingAnimatorList.size();i++){
+            simpleEasingAnimatorList.get(i).doFrame();
+        }
+
 
         if (surfaceView != null) {
             surfaceView.requestRender();
@@ -223,6 +256,13 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
                 }
             }
 
+            for(int i =0;i<simpleEasingAnimatorList.size();i++){
+                if(!simpleEasingAnimatorList.get(i).isPaused){
+                    needStop = false;
+                    break;
+                }
+            }
+
             if(needStop){
                 anim.pause();
             }
@@ -230,5 +270,13 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLEasingHelpe
     }
 
 
+    @Override
+    public void onEasingStart(GLSimpleEasingHelper animation) {
+        startAnim();
+    }
 
+    @Override
+    public void onEasingEnd(GLSimpleEasingHelper animation) {
+        stopIfNoNeedUpdate();
+    }
 }

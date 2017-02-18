@@ -15,10 +15,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".AccelerometerSampleActivity"/>
-        <activity android:name=".TouchSampleActivity"/>
-
+        <activity android:name=".AccelerometerSampleActivity" />
+        <activity android:name=".TouchSampleActivity" />
+        <activity android:name=".GLSimpleEasingSampleActivity"></activity>
     </application>
 
 </manifest>

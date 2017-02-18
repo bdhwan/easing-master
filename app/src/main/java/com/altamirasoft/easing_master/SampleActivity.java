@@ -36,6 +36,12 @@ public class SampleActivity extends AppCompatActivity {
 
     }
 
+    public void clickGL(View v){
+
+        Intent i = new Intent(this, GLSimpleEasingSampleActivity.class);
+        startActivity(i);
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
