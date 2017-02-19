@@ -1,6 +1,7 @@
 package com.altamirasoft.glanimationutil;
 
 import android.os.SystemClock;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -10,11 +11,6 @@ import java.util.ArrayList;
 
 public class GLEasingHelper  implements GLAnimatorFrameListener {
 
-
-    public static final int EASING_MODE_SIMPLE_EASING = 0;
-    public static final int EASING_MODE_SIMPLE_SPRING = 1;
-
-    int easingMode = EASING_MODE_SIMPLE_EASING;
 
 
     float targetValue;
@@ -140,12 +136,6 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
 
 
 
-
-    public GLEasingHelper setEasingMode(int target){
-        this.easingMode = target;
-        return this;
-    }
-
     public boolean isStarted(){
         return isStarted;
     }
@@ -153,6 +143,7 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
     public void start() {
         isStarted = true;
         isPaused = false;
+
         if(mListeners!=null && isPaused){
             for (int i = 0; i < mListeners.size(); i++) {
                 mListeners.get(i).onEasingStart(this);
@@ -190,18 +181,21 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
             return;
         }
 
-        float d = targetValue - currentValue;
+        if(isPaused)return;
+
+
+        float term = (now - beforeTime)/frameRate;
+        if(term>1f){
+            term = 1f;
+        }
+        float d = (targetValue - currentValue)*term;
+        if(d==0)return;
+
 
         if (Math.abs(d) < minDiffer) {
             currentValue = targetValue;
         } else {
-            float term = (now - beforeTime)/frameRate;
-            d = (targetValue - currentValue);
-            if(d==0)return;
-            if(term>1f){
-                term = 1f;
-            }
-            currentValue = currentValue+d*term * easing;
+            currentValue = currentValue + d*easing;
         }
 
 
@@ -216,6 +210,9 @@ public class GLEasingHelper  implements GLAnimatorFrameListener {
         //notify finish easing
         if(currentValue==targetValue){
             pause();
+        }
+        else {
+            isPaused = false;
         }
 
         if(mListeners!=null && isPaused){

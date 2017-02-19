@@ -6,21 +6,24 @@ import android.opengl.GLSurfaceView;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  * Created by bdhwan on 2017. 1. 20..
  */
 
-public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasingHelper.EasingListener, GLEasingHelper.EasingListener,GLValueAnimator.AnimatorListener {
+public class GLAnimatorManager implements GLAnimatorFrameListener,  GLEasingHelper.EasingListener,GLCalculateHelper.CalculateListener, GLValueAnimator.AnimatorListener {
 
     static GLAnimatorManager instance;
     ArrayList<GLValueAnimator> valueAnimatorList;
     ArrayList<GLEasingHelper> easingAnimatorList;
-    ArrayList<GLSimpleEasingHelper> simpleEasingAnimatorList;
-
-    boolean isPendingStopEasing = false;
+    ArrayList<GLCalculateHelper> calculateAnimatorList;
 
 
+
+    boolean isPendingStopEasing = true;
+
+    boolean needKeepUpdate = false;
 
     GLSurfaceView surfaceView;
 
@@ -29,31 +32,31 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
     }
 
 
-
     public static GLAnimatorManager getInstance() {
         if (instance == null) {
             instance = new GLAnimatorManager();
             instance.valueAnimatorList = new ArrayList<GLValueAnimator>();
             instance.easingAnimatorList = new ArrayList<GLEasingHelper>();
-            instance.simpleEasingAnimatorList = new ArrayList<GLSimpleEasingHelper>();
+            instance.calculateAnimatorList = new ArrayList<GLCalculateHelper>();
         }
         return instance;
     }
 
 
     public void addValueAnimFrameListener(GLValueAnimator listener) {
-        if(this.valueAnimatorList!=null){
+        if (this.valueAnimatorList != null) {
             this.valueAnimatorList.add(listener);
         }
     }
 
 
     public void removeValueAnimFrameListener(GLValueAnimator listener) {
-        if(this.valueAnimatorList!=null){
+        if (this.valueAnimatorList != null) {
             this.valueAnimatorList.remove(listener);
         }
-
     }
+
+
 
     public GLValueAnimator createValueAnimator(float from, float to) {
         GLValueAnimator animator = GLValueAnimator.ofFloat(from, to);
@@ -63,22 +66,35 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
     }
 
 
-    public void addEasingFrameListener(GLEasingHelper listener){
-        if(this.easingAnimatorList!=null){
+    public void addCalculateFrameListener(GLCalculateHelper listener) {
+        if (this.calculateAnimatorList != null) {
+            this.calculateAnimatorList.add(listener);
+        }
+    }
+
+
+
+
+    public void addEasingFrameListener(GLEasingHelper listener) {
+        if (this.easingAnimatorList != null) {
             this.easingAnimatorList.add(listener);
         }
     }
 
 
-
-    public void removeEasingFrameListener(GLEasingHelper listener){
-        if(this.easingAnimatorList!=null){
+    public void removeEasingFrameListener(GLEasingHelper listener) {
+        if (this.easingAnimatorList != null) {
             this.easingAnimatorList.remove(listener);
         }
     }
 
 
-    public GLEasingHelper createEasingHelper(){
+    public GLEasingHelper createEasingHelper() {
+
+
+        if (this.easingAnimatorList != null) {
+            this.easingAnimatorList.clear();
+        }
 
         GLEasingHelper helper = new GLEasingHelper();
         addEasingFrameListener(helper);
@@ -89,29 +105,22 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
 
 
 
+    public GLCalculateHelper createCalculateHelper() {
 
-    public GLSimpleEasingHelper createSimpleEasingHelper(){
-        GLSimpleEasingHelper helper = new GLSimpleEasingHelper();
-        addSimpleEasingFrameListener(helper);
+
+        if (this.calculateAnimatorList != null) {
+            this.calculateAnimatorList.clear();
+        }
+
+
+
+
+
+
+        GLCalculateHelper helper = new GLCalculateHelper();
+        addCalculateFrameListener(helper);
         helper.addListener(this);
         return helper;
-
-    }
-
-
-
-    public void addSimpleEasingFrameListener(GLSimpleEasingHelper listener){
-        if(this.simpleEasingAnimatorList!=null){
-            this.simpleEasingAnimatorList.add(listener);
-        }
-    }
-
-
-
-    public void removeSimpleEasingFrameListener(GLSimpleEasingHelper listener){
-        if(this.simpleEasingAnimatorList!=null){
-            this.simpleEasingAnimatorList.remove(listener);
-        }
     }
 
 
@@ -121,11 +130,21 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
 
     ValueAnimator anim;
 
+
+    public boolean isPlaying() {
+        if (anim == null) {
+            return false;
+        } else {
+            return anim.isRunning();
+        }
+    }
+
     public void startAnim() {
 
         if (anim == null) {
-            anim = ValueAnimator.ofFloat(0f, 1f);
 
+
+            anim = ValueAnimator.ofFloat(0f, 1f);
             anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -167,11 +186,45 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
         }
     }
 
+    public void resumeAnim(){
+        if (anim != null) {
+            if (anim.isPaused()) {
+                anim.resume();
+                if (isPendingStopEasing) {
+                    stopIfNoNeedUpdate();
+                }
+            }
+        }
+    }
 
     public void pauseAnim() {
-        if(anim!=null){
+        if (anim != null) {
             anim.pause();
         }
+    }
+
+
+    public void resetAll(){
+
+        if (anim != null) {
+            anim.pause();
+            anim = null;
+        }
+
+        if(valueAnimatorList!=null){
+            valueAnimatorList.clear();
+        }
+
+        if(easingAnimatorList!=null){
+            easingAnimatorList.clear();
+        }
+
+        if(calculateAnimatorList!=null){
+            calculateAnimatorList.clear();
+        }
+
+        GLAnimatorManager.instance = null;
+
     }
 
 
@@ -179,24 +232,26 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
     @Override
     public void doFrame() {
 
+//        long now = new Date().getTime();
+//        long differ = now - beforeFrame;
+
+//        Log.d("log","differ:"+differ+", valueAnimatorList ="+valueAnimatorList.size()+", easingAnimatorList ="+easingAnimatorList.size()+", calculateAnimatorList ="+calculateAnimatorList.size());
+
+//        beforeFrame = now;
+
         for (int i = 0; i < valueAnimatorList.size(); i++) {
             valueAnimatorList.get(i).doFrame();
         }
-
-        for(int i =0;i<easingAnimatorList.size();i++){
+        for (int i = 0; i < easingAnimatorList.size(); i++) {
             easingAnimatorList.get(i).doFrame();
         }
-
-        for(int i =0;i<simpleEasingAnimatorList.size();i++){
-            simpleEasingAnimatorList.get(i).doFrame();
+        for (int i = 0; i < calculateAnimatorList.size(); i++) {
+            calculateAnimatorList.get(i).doFrame();
         }
-
 
         if (surfaceView != null) {
             surfaceView.requestRender();
         }
-
-
     }
 
 
@@ -229,41 +284,37 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
 
     @Override
     public void onEasingEnd(GLEasingHelper animation) {
-        if(isPendingStopEasing){
-
+        if (isPendingStopEasing) {
             stopIfNoNeedUpdate();
         }
     }
 
 
-    public void setPendingStopAnimationWithEasingEnd(boolean isPending){
+    public void setPendingStopAnimationWithEasingEnd(boolean isPending) {
         this.isPendingStopEasing = isPending;
     }
 
 
-    public void stopIfNoNeedUpdate(){
-        if(anim!=null){
+    public void stopIfNoNeedUpdate() {
+        if (anim != null) {
 
-            if(valueAnimatorList.size()>0){
+            //force update
+            if(needKeepUpdate)return;
+
+            //check value animator is working
+            if (valueAnimatorList.size() > 0) {
                 return;
             }
 
+            //check easing animator is working
             boolean needStop = true;
-            for(int i =0;i<easingAnimatorList.size();i++){
-                if(!easingAnimatorList.get(i).isPaused){
+            for (int i = 0; i < easingAnimatorList.size(); i++) {
+                if (!easingAnimatorList.get(i).isPaused) {
                     needStop = false;
                     break;
                 }
             }
-
-            for(int i =0;i<simpleEasingAnimatorList.size();i++){
-                if(!simpleEasingAnimatorList.get(i).isPaused){
-                    needStop = false;
-                    break;
-                }
-            }
-
-            if(needStop){
+            if (needStop) {
                 anim.pause();
             }
         }
@@ -271,12 +322,13 @@ public class GLAnimatorManager implements GLAnimatorFrameListener, GLSimpleEasin
 
 
     @Override
-    public void onEasingStart(GLSimpleEasingHelper animation) {
-        startAnim();
+    public void onCalculateStart(GLCalculateHelper animation) {
+        needKeepUpdate = true;
     }
 
     @Override
-    public void onEasingEnd(GLSimpleEasingHelper animation) {
+    public void onCalculateEnd(GLCalculateHelper animation) {
+        needKeepUpdate = false;
         stopIfNoNeedUpdate();
     }
 }
